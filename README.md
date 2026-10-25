@@ -1,1 +1,0 @@
-# xronika-finmodel

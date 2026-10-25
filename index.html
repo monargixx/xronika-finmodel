@@ -1,0 +1,1026 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Финмодель «Хроники»</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Tenor+Sans&display=swap">
+<style>
+  /* Финмодель: та же марка, что на визитке и шпаргалках. Графит, тёплая бумага, золотой акцент. */
+  :root {
+    --bg: #ecebe7; --surface: #f8f7f4; --surface2: #f1efea; --fg: #17191b; --muted: #6a6862;
+    --line: rgba(23,25,27,.12); --accent: #9c8158; --accent-soft: rgba(156,129,88,.14);
+    --pos: #3f6b55; --neg: #a24a3c; --s1: #9c8158; --s2: #17191b; --s3: #3f6b55; --s0: #a24a3c;
+    --head-bg: #17191b; --head-fg: #f1ede6;
+    --sans: "Manrope", "Segoe UI", Arial, sans-serif; --display: "Tenor Sans", "Manrope", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121315; --surface: #1c1e21; --surface2: #222428; --fg: #ece8e1; --muted: #9a978f;
+      --line: rgba(236,232,225,.12); --accent: #c4a87c; --accent-soft: rgba(196,168,124,.16);
+      --pos: #86b89c; --neg: #d98272; --s1: #c4a87c; --s2: #ece8e1; --s3: #86b89c; --s0: #d98272;
+      --head-bg: #0b0c0d; --head-fg: #ece8e1; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121315; --surface: #1c1e21; --surface2: #222428; --fg: #ece8e1; --muted: #9a978f;
+    --line: rgba(236,232,225,.12); --accent: #c4a87c; --accent-soft: rgba(196,168,124,.16);
+    --pos: #86b89c; --neg: #d98272; --s1: #c4a87c; --s2: #ece8e1; --s3: #86b89c; --s0: #d98272;
+    --head-bg: #0b0c0d; --head-fg: #ece8e1; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 700px) { .wrap { padding-inline: 28px; } }
+
+  header { background: var(--head-bg); color: var(--head-fg); }
+  header .wrap { padding-block: 30px 24px; }
+  .mark { font-family: var(--display); letter-spacing: .4em; font-size: 16px; }
+  .rule { position: relative; height: 1px; background: currentColor; opacity: .3; margin: 14px 0 18px; max-width: 420px; }
+  .dot { position: absolute; left: 62%; top: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  header h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.2; margin: 0; font-weight: 600; text-wrap: balance; }
+  header p { margin: 8px 0 0; font-size: 15px; opacity: .78; max-width: 760px; }
+
+  .bar { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .bar .wrap { display: flex; flex-direction: column; gap: 8px; padding-block: 10px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  .controls > * { min-width: 0; max-width: 100%; }
+  .seg { display: inline-flex; background: var(--surface2); border-radius: 18px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+  @media (max-width: 699px) {
+    .bar { position: static; }
+    .controls { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    .seg button { flex: 1 1 auto; }
+  }
+  .seg button { font: 600 13px var(--sans); color: var(--muted); background: none; border: 0; padding: 7px 12px; border-radius: 999px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; }
+  .tabs button { flex: none; font: 600 14px var(--sans); color: var(--muted); background: none; border: 0; padding: 8px 12px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+  .tabs button[aria-selected="true"] { color: var(--fg); background: var(--accent-soft); }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .lbl { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  main .wrap { padding-block: 26px 70px; }
+  section[hidden] { display: none !important; }
+  .stack { display: flex; flex-direction: column; gap: 28px; }
+  h2 { font-size: 22px; line-height: 1.25; margin: 0 0 6px; font-weight: 600; text-wrap: balance; }
+  h3 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+  p { margin: 0 0 10px; }
+  .lead { font-size: 17px; max-width: 820px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; }
+  .num { font-variant-numeric: tabular-nums; }
+  a { color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; min-width: 0; }
+  .card.dark { background: var(--head-bg); color: var(--head-fg); border-color: transparent; }
+  .card.dark .muted { color: var(--head-fg); opacity: .7; }
+  .grid { display: grid; gap: 14px; }
+  .grid > *, .stack > *, .kpis > * { min-width: 0; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
+  .kpis { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0; }
+  .kpi .v { font-size: 26px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .kpi .k { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .kpi.warn .v { color: var(--neg); }
+  .kpi.good .v { color: var(--pos); }
+  .flag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); vertical-align: middle; }
+  .flag.neg { background: rgba(162,74,60,.12); color: var(--neg); }
+  .flag.pos { background: rgba(63,107,85,.12); color: var(--pos); }
+  .note { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; color: var(--muted); font-size: 14px; }
+  .alert { border-radius: 12px; padding: 12px 14px; background: rgba(162,74,60,.1); color: var(--neg); font-size: 14px; font-weight: 500; }
+  .ok { border-radius: 12px; padding: 12px 14px; background: rgba(63,107,85,.1); color: var(--pos); font-size: 14px; font-weight: 500; }
+  ol.list, ul.list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .concl li { padding-left: 4px; }
+  .concl b { font-weight: 700; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 180px; }
+  thead th { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .04em; background: var(--surface2); position: sticky; top: 0; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tr.total td { font-weight: 700; background: var(--surface2); }
+  td.neg { color: var(--neg); } td.pos { color: var(--pos); }
+  tr.sel td { background: var(--accent-soft); }
+  .card td, .card th { white-space: normal; }
+  .card td:first-child { min-width: 0; }
+  td input.cell { width: 120px; text-align: right; font: inherit; color: inherit; background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; }
+  td input.cell.edited { border-color: var(--accent); }
+
+  .sliders { display: grid; gap: 14px 22px; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); }
+  .sl { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .sl .top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .sl .top span:first-child { color: var(--muted); }
+  .sl .top b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sl input[type=range] { width: 100%; accent-color: var(--accent); }
+  .sl .hint { font-size: 12px; color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .btn { font: 600 14px var(--sans); padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+  .btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  select, input[type=number] { font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+
+  .chart { width: 100%; height: auto; display: block; }
+  .chart text { fill: var(--muted); font: 12px var(--sans); }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+
+  .tor { display: flex; flex-direction: column; gap: 8px; }
+  .tor .r { display: grid; grid-template-columns: minmax(140px, 230px) 1fr; gap: 12px; align-items: center; font-size: 14px; }
+  .tor .track { position: relative; height: 22px; }
+  .tor .mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--line); }
+  .tor .b { position: absolute; top: 3px; height: 16px; border-radius: 4px; }
+  .tor .b.n { background: var(--neg); opacity: .75; } .tor .b.p { background: var(--pos); opacity: .75; }
+  @media (max-width: 560px) { .tor .r { grid-template-columns: 1fr; gap: 2px; } }
+
+  .risk { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .chk { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .chk:last-child { border-bottom: 0; }
+  .chk input { margin-top: 5px; accent-color: var(--accent); width: 18px; height: 18px; flex: none; }
+  .chk.done span { color: var(--muted); text-decoration: line-through; }
+  .idea { display: flex; flex-direction: column; gap: 6px; }
+  .idea .t { font-weight: 700; }
+  .idea .e { font-size: 13px; color: var(--accent); font-weight: 600; }
+  .src { font-size: 13px; color: var(--muted); }
+  .src a { word-break: break-word; }
+  .steps { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .step { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; position: relative; }
+  .step .n { font-family: var(--display); font-size: 13px; letter-spacing: .2em; color: var(--accent); }
+  .step .t { font-weight: 700; margin: 4px 0 6px; }
+  details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+  details summary { cursor: pointer; font-weight: 600; }
+  details[open] summary { margin-bottom: 10px; }
+  .foot { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; margin-top: 30px; }
+  @media print { .bar { position: static; } section[hidden] { display: block !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="mark">ХРОНИКА</div>
+    <div class="rule"><span class="dot"></span></div>
+    <h1>Финансовая модель: зал прощания и рост «Хроники»</h1>
+    <p>Рабочая модель для команды и встреч с партнёрами после ужина 26 октября. Все цифры о самой «Хронике» пока допущения: их нужно заменить реальными данными Даниила (вкладка «Вопросы Даниилу»). Двигайте ползунки, всё пересчитывается сразу.</p>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="controls">
+      <span class="lbl">Вариант</span>
+      <div class="seg" id="segVariant"></div>
+      <span class="lbl">Сценарий</span>
+      <div class="seg" id="segScenario"></div>
+      <button class="btn" id="resetBtn" title="Вернуть все допущения к исходным">Сбросить</button>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+
+    <!-- ИТОГ -->
+    <section id="sum" class="stack">
+      <div>
+        <h2 id="sumTitle"></h2>
+        <p class="muted small" id="sumSub"></p>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="card">
+        <h3>Накопленные деньги проекта, по сценариям</h3>
+        <svg class="chart" id="cumChart" viewBox="0 0 800 280" role="img" aria-label="График накопленного денежного потока"></svg>
+        <div class="legend" id="cumLegend"></div>
+        <p class="small muted" style="margin-top:8px">Ниже нуля — сколько денег проект «съел» к этому месяцу. Самая нижняя точка кривой — сколько нужно привлечь. Момент, когда кривая выходит выше нуля, — окупаемость.</p>
+      </div>
+      <div>
+        <h3>Главные выводы</h3>
+        <ol class="list concl" id="conclusions"></ol>
+      </div>
+      <div>
+        <h3>Все варианты рядом</h3>
+        <div class="tablewrap"><table id="compare"></table></div>
+        <p class="small muted" style="margin-top:8px">Строки считаются по текущим цифрам «Хроники» с вкладки «Сегодня» и стандартным допущениям каждого варианта. Окупаемость считается с начала проекта (месяц 1 = старт подготовки). Осторожные сценарии показывают, что будет, если пять лет упорно продолжать при слабом спросе. На деле Этап 0 останавливают через 6 месяцев, если поток семей не растёт, а Этап 1 не начинают, пока не пройден порог в 22–25 семей.</p>
+      </div>
+      <div>
+        <h3>Рекомендуемая лестница</h3>
+        <div class="steps">
+          <div class="step"><div class="n">ШАГ 0 · СЕЙЧАС</div><div class="t">Цифры и бренд</div><div class="small">Собрать реальные цифры за 12 месяцев. Запустить соцсети, вечера, новые страницы сайта, CRM. Параллельно искать помещение и юриста. Стоимость около 1,3 млн ₽.</div></div>
+          <div class="step"><div class="n">ПОРОГ</div><div class="t">22–25 семей в месяц</div><div class="small">Три месяца подряд и подтверждённая маржа. Это доказательство спроса для партнёра и точка безубыточности Этапа 1.</div></div>
+          <div class="step"><div class="n">ШАГ 1</div><div class="t">Зал прощания</div><div class="small">Зал и комната для семьи, хранение у партнёров. Смета около 7 млн ₽, с запасом около 10,5 млн. Сюда и зовём партнёра с ужина.</div></div>
+          <div class="step"><div class="n">ШАГ 2 · ПОТОМ</div><div class="t">Своё хранение</div><div class="small">Когда стабильно 45+ семей в месяц и юрист подтвердил требования к помещению и оборудованию. Это уже полноценный похоронный дом.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- РЫНОК -->
+    <section id="market" class="stack" hidden>
+      <div>
+        <h2>Рынок: что известно точно</h2>
+        <p class="lead">Цифры с источником и периодом. Где данных нет, так и написано.</p>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="v">9,4 млрд ₽</div><div class="k">Рынок ритуальных услуг Петербурга за 2024 год, +11% (Коммерсантъ по данным Росстата)</div></div>
+        <div class="kpi"><div class="v">+12,8%</div><div class="k">Рост за январь–апрель 2025 к прошлому году, 3,7 млрд ₽</div></div>
+        <div class="kpi"><div class="v">≈ 62 тыс.</div><div class="k">Умерших в Петербурге за 2024 год (коэффициент 11,1 на 1000, Петростат)</div></div>
+        <div class="kpi"><div class="v">67%</div><div class="k">Доля кремаций в Петербурге, 2023 год (≈ 42 тыс.)</div></div>
+        <div class="kpi"><div class="v">128,3 млрд ₽</div><div class="k">Рынок России за 2025 год, +3,3% в сопоставимых ценах</div></div>
+        <div class="kpi"><div class="v">995</div><div class="k">Новых ритуальных компаний в России за I полугодие 2026 года, +22,5%, максимум за 5 лет; 81% из них ИП</div></div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <h3>Что из этого следует (наш расчёт)</h3>
+          <ul class="list small">
+            <li>В среднем на одно прощание в Петербурге тратят около <b>150 тыс. ₽</b> (9,4 млрд ₽ ÷ 62 тыс.). Это все траты, включая кладбище и памятники, но порядок показывает: чек «Хроники» в 85 тыс. ₽ не завышен.</li>
+            <li>В месяц в городе прощаются примерно с <b>5 200 людьми</b>. 15 семей «Хроники» — это около 0,3% города, 35 семей — около 0,7%. Цель проекта не требует отвоёвывать большую долю.</li>
+            <li>Две трети выбирают кремацию. Значит, зал прощания нужен как место церемонии перед кремацией, а не только перед погребением. Залы при крематории — главный конкурент по цене.</li>
+            <li>Новых компаний много, брендов почти нет. Конкуренция идёт за первый звонок семьи, а не за доверие заранее. В этом и окно для бренда.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Цены у конкурентов (с сайтов, могли устареть)</h3>
+          <div class="tablewrap" style="border:0">
+            <table>
+              <thead><tr><th>Что</th><th>Цена</th></tr></thead>
+              <tbody>
+                <tr><td>Зал прощания, Партизанская, 8: малый на 25 чел. / большой на 90 чел.</td><td>3 500 / 6 000 ₽ за 45 мин</td></tr>
+                <tr><td>Похоронный дом Гладилина: аренда зала</td><td>6–8 тыс. ₽ в час</td></tr>
+                <tr><td>Залы по городу: малый при морге / VIP в крематории</td><td>от 3 000 до 25 000 ₽</td></tr>
+                <tr><td>Подготовка тела в морге</td><td>от 8 000 ₽</td></tr>
+                <tr><td>Хранение в коммерческих моргах (не подтверждено)</td><td>500–1 500 ₽ в сутки</td></tr>
+                <tr><td>Хранение в государственных моргах</td><td>обычно бесплатно до 7 суток</td></tr>
+                <tr><td>Пособие на погребение, федеральный размер с 01.02.2026</td><td>9 678,63 ₽</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted" style="margin-top:8px">Вывод: на хранении много не заработать, оно бесплатно неделю. Своё хранение нужно не ради денег за сутки, а чтобы снять главный страх семьи и держать весь заказ у себя.</p>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <h3>Кто держит рынок</h3>
+          <p class="small">По оценке «Делового Петербурга» 2018 года, около 90% похоронного рынка города контролировали аффилированные компании нескольких крупных групп. Городское ГУП «Ритуальные услуги» долго имело приоритет на вывоз; в 2025 году юрлицо реорганизовано. Свежих разборов нет. <b>За столом фамилий не называем.</b></p>
+          <p class="small">Важно для модели: крупные игроки сильны в первом контакте (места, где семья впервые оказывается после утраты). «Хроника» не конкурирует там серыми методами. Её путь — заранее знакомый бренд, рекомендации, прозрачная смета, Директ.</p>
+        </div>
+        <div class="card">
+          <h3>Деньги и налоги, которые влияют на расчёт</h3>
+          <ul class="list small">
+            <li>Ключевая ставка ЦБ на сентябрь 2026 года: <b>14%</b>. Вклад даёт 10–13%, поэтому частный партнёр ждёт от рискованного проекта 20–30% годовых.</li>
+            <li>Порог НДС для упрощёнки сохранён на уровне <b>20 млн ₽</b> выручки до 2029 года. Этап 1 выводит выручку за 20 млн.</li>
+            <li>Ритуальные услуги и похоронные принадлежности из правительственного перечня освобождены от НДС (п. 2 ст. 149 НК РФ, письмо Минфина от 10.08.2026). <b>Аренда зала другим агентствам может не попасть под льготу</b>: это вопрос бухгалтеру до старта.</li>
+            <li>В модели налог упрощёнки «доходы минус расходы»: 15% прибыли, но не меньше 1% выручки. Режим ИП Даниила нужно уточнить.</li>
+          </ul>
+        </div>
+      </div>
+
+      <details>
+        <summary>Источники</summary>
+        <ul class="list src">
+          <li>Петербург 2024, 9,4 млрд ₽: <a href="https://www.kommersant.ru/doc/7796287" target="_blank" rel="noopener">Коммерсантъ</a></li>
+          <li>Петербург январь–апрель 2025: <a href="https://spbgorritual.ru/about/novosti/rynok-ritualnyh-uslug-v-sankt-peterburge-vyros-na-12-8-kakie-ceny-zhdat-v-2025-godu-i-kak-sekonomit/" target="_blank" rel="noopener">spbgorritual.ru</a></li>
+          <li>Россия 2025, 128,3 млрд ₽: <a href="https://www.kommersant.ru/doc/8460900" target="_blank" rel="noopener">Коммерсантъ</a>; 2026, новые компании: <a href="https://www.kommersant.ru/doc/8833401" target="_blank" rel="noopener">Коммерсантъ</a></li>
+          <li>Смертность Петербурга 2024: <a href="https://www.rbc.ru/spb_sz/freenews/67ac7e009a79479027bcadd0" target="_blank" rel="noopener">РБК Петербург, доклад Петростата</a></li>
+          <li>Кремации 2023: <a href="https://ru.themoscowtimes.com/2025/09/30/v-rossii-otkroyut-krupneishii-v-evrope-krematorii-posle-rekordnih-so-vtoroi-mirovoi-voini-poter-v-ukraine-a175816" target="_blank" rel="noopener">The Moscow Times</a></li>
+          <li>Залы: <a href="https://ritcentr.ru/proshhalnye-zaly/" target="_blank" rel="noopener">ritcentr.ru</a>, <a href="https://pdbg.ru/add-services/arenda-proshhalnogo-zala/" target="_blank" rel="noopener">pdbg.ru</a>, <a href="https://ritualdante.ru/uslugi/arenda-zala/" target="_blank" rel="noopener">ritualdante.ru</a>; хранение: <a href="https://uslugiritual.ru/morgi/hranenie-tela-v-morge" target="_blank" rel="noopener">uslugiritual.ru</a></li>
+          <li>Пособие 2026: <a href="https://pnz.ru/life/novye-razmery-i-pravila-polucheniya-posobiya-na-pogrebenie-komu-polozhena-povyshennaya-vyplata/" target="_blank" rel="noopener">pnz.ru</a></li>
+          <li>Ключевая ставка: <a href="https://buh.ru/news/tsb-rf-sokhranil-klyuchevuyu-stavku-na-urovne-14-godovykh.html" target="_blank" rel="noopener">buh.ru</a>; порог НДС 20 млн: <a href="https://ppt.ru/amp/news/nds/gosduma-zakrepila-porog-dlya-uplaty-nds-pri-usn-popravki-prinyaty" target="_blank" rel="noopener">ppt.ru</a>; НДС и похоронные принадлежности: <a href="https://buh.ru/news/kogda-realizatsiya-pokhoronnykh-prinadlezhnostey-osvobozhdena-ot-nds.html" target="_blank" rel="noopener">buh.ru</a></li>
+          <li>Монополия 2018: <a href="https://www.dp.ru/a/2018/02/19/Vojna_s_mogilnoj_imperie" target="_blank" rel="noopener">DP.ru</a>, <a href="https://meduza.io/feature/2018/08/14/grob-kladbische-sotni-milliardov-rubley" target="_blank" rel="noopener">Meduza</a></li>
+          <li>Холодильные камеры для моргов, цены 2015 года: <a href="https://vademec.ru/article/terpenie_i_trup/" target="_blank" rel="noopener">Vademecum</a>; регистрация камер как медизделий: <a href="https://nevacert.ru/reports/20-registratsiya-kamer-kholodilnykh-dlya-khraneniya-trupov-otchet" target="_blank" rel="noopener">Невасерт</a></li>
+          <li>Цены «Хроники»: <a href="https://xronikaspb.ru/ceny/" target="_blank" rel="noopener">xronikaspb.ru/ceny</a></li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- СЕГОДНЯ -->
+    <section id="today" class="stack" hidden>
+      <div>
+        <h2>«Хроника» сегодня: сколько остаётся с одной семьи</h2>
+        <p class="lead">Это точка отсчёта. Проект сравнивается не с нулём, а с тем, что «Хроника» и так заработает без зала. Пока здесь допущения: замените их цифрами Даниила.</p>
+      </div>
+      <div class="card"><div class="sliders" id="slToday"></div></div>
+      <div class="kpis" id="kpisToday"></div>
+      <div class="grid g2">
+        <div class="card">
+          <h3>Откуда средний чек 85 тыс. ₽: пример по прайсу «Хроники»</h3>
+          <div class="tablewrap" style="border:0">
+            <table>
+              <tbody>
+                <tr><td>Стандартный комплекс организации</td><td>от 55 000 ₽</td></tr>
+                <tr><td>Гроб лакированный</td><td>21 000 ₽</td></tr>
+                <tr><td>Постель комфортная</td><td>3 600 ₽</td></tr>
+                <tr><td>Венок средний</td><td>3 800 ₽</td></tr>
+                <tr><td>Перевозка к крематорию или кладбищу</td><td>5 000 ₽</td></tr>
+                <tr class="total"><td>Итого</td><td>≈ 88 400 ₽</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted" style="margin-top:8px">Базовый пакет от 40 000 ₽, расширенный от 80 000 ₽, кремация от 20 000 ₽. Поэтому средний чек 85 тыс. ₽ взят как разумная середина. Реальный покажет выгрузка заказов.</p>
+        </div>
+        <div class="card">
+          <h3>Что такое «маржа с заказа» в этой модели</h3>
+          <p class="small">Доля чека, которая остаётся после всего, что уходит другим: товары по цене фабрики, крематорий и кладбище, бригада и транспорт на подряде, комиссия агента. Реклама (цена привлечения семьи) вычитается отдельно.</p>
+          <p class="small">50% — допущение. В ритуальной сфере наценка на товары высокая, а сторонние платежи (кремация, копка) почти без наценки. Если у «Хроники» маржа 40%, проект становится заметно хуже. Это самая чувствительная цифра модели (см. вкладку «Что влияет»).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПРОЕКТ -->
+    <section id="project" class="stack" hidden>
+      <div>
+        <h2 id="projTitle"></h2>
+        <p class="lead" id="projLead"></p>
+      </div>
+      <div class="grid g3" id="variantCards"></div>
+      <div class="card">
+        <h3>Допущения проекта</h3>
+        <div class="sliders" id="slProject"></div>
+        <div class="row" style="margin-top:14px">
+          <label class="small"><input type="checkbox" id="seasonChk"> Учитывать сезонность (зимой обращений больше, летом меньше)</label>
+          <label class="small">Старт проекта
+            <select id="startSel"></select>
+          </label>
+        </div>
+      </div>
+      <div class="grid g2">
+        <div>
+          <h3>Смета запуска <span class="flag" id="capexFlag"></span></h3>
+          <div class="tablewrap"><table id="capexTable"></table></div>
+          <p class="small muted" style="margin-top:8px">Любую сумму можно поправить прямо в таблице. Изменённые строки подсвечены.</p>
+        </div>
+        <div>
+          <h3>Расходы в месяц после открытия <span class="flag" id="opexFlag"></span></h3>
+          <div class="tablewrap"><table id="opexTable"></table></div>
+          <p class="small muted" style="margin-top:8px">Плюс текущие постоянные расходы «Хроники» с вкладки «Сегодня». Бригада, товары и подрядчики уже внутри маржи с заказа.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Почему с залом растёт средний чек</h3>
+        <div class="grid g3 small">
+          <div><b>Зал прощания.</b> Семья платит за церемонию у «Хроники», а не в чужом зале: 5–10 тыс. ₽ остаются у себя.</div>
+          <div><b>Своё хранение и подготовка</b> (только в варианте «похоронный дом»): 8–20 тыс. ₽ за подготовку и сутки хранения, плюс семья видит, где близкий.</div>
+          <div><b>Онлайн-трансляция</b> для родных из других городов: 3–5 тыс. ₽, камера уже в смете.</div>
+          <div><b>Фильм памяти</b> о жизни человека для церемонии: 8–15 тыс. ₽.</div>
+          <div><b>Комната для семьи</b> с образцами: семья спокойно выбирает, чаще выбирает лучше, а не дешевле.</div>
+          <div><b>Доверие.</b> Место, куда можно приехать заранее, сильнее переводит звонок в заказ.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПО МЕСЯЦАМ -->
+    <section id="cash" class="stack" hidden>
+      <div>
+        <h2>Деньги по месяцам и годам</h2>
+        <p class="lead">«С проектом» — вся «Хроника» с залом. «Без проекта» — «Хроника», которая продолжает работать как сейчас. Разница — деньги проекта: они идут на возврат партнёру.</p>
+      </div>
+      <div class="card">
+        <h3>Деньги проекта каждый месяц</h3>
+        <svg class="chart" id="barChart" viewBox="0 0 800 260" role="img" aria-label="Помесячный денежный поток проекта"></svg>
+        <div class="legend"><span><i style="background:var(--pos)"></i>месяц в плюсе</span><span><i style="background:var(--neg)"></i>месяц в минусе (подготовка, ремонт, выход на план)</span></div>
+      </div>
+      <div>
+        <h3>По годам</h3>
+        <div class="tablewrap"><table id="yearTable"></table></div>
+      </div>
+      <details id="monthsDetails">
+        <summary>Все 60 месяцев</summary>
+        <div class="tablewrap"><table id="monthTable"></table></div>
+      </details>
+    </section>
+
+    <!-- ПАРТНЁРУ -->
+    <section id="investor" class="stack" hidden>
+      <div>
+        <h2>Условия для партнёра</h2>
+        <p class="lead">Три понятных формата. «Хроника» сейчас ИП, поэтому долю в ИП дать нельзя. Для доли нужно ООО под проект, для остальных форматов подходит договор займа или простого товарищества. Договор составляет юрист.</p>
+      </div>
+      <div id="invWarn"></div>
+      <div class="card">
+        <h3>Сколько привлекаем</h3>
+        <div class="sliders" id="slInvest"></div>
+        <p class="small muted" style="margin-top:8px" id="invAuto"></p>
+      </div>
+      <div class="grid g3" id="invCards"></div>
+      <div class="card">
+        <h3>Честные условия при текущих допущениях</h3>
+        <div id="fairTerms" class="small"></div>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h3>Как сделать условия мягче для «Хроники»</h3>
+          <ul class="list small">
+            <li><b>Партнёр с помещением.</b> Собственник даёт помещение и делает ремонт за свой счёт под долгую аренду с арендными каникулами, а взамен получает процент выручки. Это убирает до половины сметы. Проверьте в модели: ставку ремонта поставить 5–8 тыс. ₽/м².</li>
+            <li><b>Часть вносит сама «Хроника».</b> Даже 20–30% своих денег сильно повышают доверие и снижают долю партнёра.</li>
+            <li><b>Сначала доказать рост.</b> Три месяца с 22–25 семьями — и проект для партнёра уже не идея, а работающая модель. Условия сразу лучше.</li>
+            <li><b>Смешанный формат.</b> Часть займом (оборудование, ремонт), часть процентом выручки до возврата.</li>
+            <li><b>Два-три партнёра вместо одного</b> по отдельным договорам. Не собирать деньги публично и не обещать доходность в рекламе: это зона законов о защите инвесторов.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Что говорить о формате на встрече</h3>
+          <p class="small">«Мы рассматриваем три формата: процент от выручки зала до возврата вложений с доходом, заём под процент с отсрочкой на время запуска или долю в отдельной компании под проект. Вот расчёт по каждому в трёх сценариях. Нам важно, чтобы вам было выгодно и в осторожном сценарии, поэтому давайте выберем формат вместе.»</p>
+          <p class="small muted">Не обещаем доход. Показываем сценарии, включая осторожный, и честно говорим о рисках. Это и есть то, что вызывает доверие.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ЧУВСТВИТЕЛЬНОСТЬ -->
+    <section id="sens" class="stack" hidden>
+      <div>
+        <h2>Что влияет на результат сильнее всего</h2>
+        <p class="lead">Каждую цифру сдвигаем на 20% вниз и вверх и смотрим, как меняется ценность проекта (NPV за 5 лет со стоимостью бизнеса в конце). Чем длиннее полоса, тем важнее цифру проверить.</p>
+      </div>
+      <div class="card">
+        <div class="tor" id="tornado"></div>
+        <p class="small muted" style="margin-top:12px" id="sensBase"></p>
+      </div>
+      <div class="kpis" id="kpisSens"></div>
+      <div class="card small">
+        <h3>Как читать</h3>
+        <p>Маржа, средний чек и число семей влияют в несколько раз сильнее, чем аренда или смета. Поэтому <b>сначала проверяем реальные цифры заказов</b>, а уже потом торгуемся за аренду. Если реальная маржа окажется 40%, а не 50%, никакое дешёвое помещение это не компенсирует.</p>
+        <p>NPV — сегодняшняя ценность всех будущих денег проекта при ставке <span id="discTxt"></span> годовых. Больше нуля — проект зарабатывает больше, чем требует партнёр с такой доходностью.</p>
+      </div>
+      <div class="card">
+        <h3>Финансовые допущения</h3>
+        <div class="sliders" id="slFin"></div>
+      </div>
+    </section>
+
+    <!-- РИСКИ И ЗАКОН -->
+    <section id="risks" class="stack" hidden>
+      <div>
+        <h2>Риски и юридическая часть</h2>
+        <p class="lead">Сначала юрист, потом помещение, потом деньги. Самый опасный сценарий: подписать аренду и узнать, что зал там открыть нельзя.</p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Риск</th><th style="text-align:left">Вероятность / удар</th><th style="text-align:left">Что делаем</th></tr></thead>
+          <tbody id="riskBody"></tbody>
+        </table>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h3>Помещение: главный фильтр</h3>
+          <ul class="list small">
+            <li>По старым санитарным правилам (СанПиН 2.1.2882-11) здания с помещениями для хранения тел, подготовки к похоронам и прощания должны стоять <b>не ближе 50 м от жилых домов</b>, детских, спортивных, культурных и социальных учреждений. Сейчас действует СанПиН 2.1.3684-21: юрист должен подтвердить, какая норма и в какой редакции действует для зала без хранения.</li>
+            <li>Значит, первые этажи жилых домов почти наверняка не подходят. Искать: отдельно стоящие здания, промзоны, территории рядом с больницами, кладбищами, крематорием.</li>
+            <li>Нужны: нежилое назначение, отдельный вход и подъезд для спецтранспорта, вентиляция, место для парковки гостей.</li>
+            <li>Договор аренды подписывать с условием: если согласования не получены, договор расторгается без потерь.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Чек-лист до разговора о деньгах</h3>
+          <div id="legalList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- РОСТ -->
+    <section id="growth" class="stack" hidden>
+      <div>
+        <h2>Как раскрутить: идеи сверх модели</h2>
+        <p class="lead">В основной расчёт не входят, чтобы не приукрашивать. Каждая идея — отдельный источник денег, который можно добавить, когда заработает основа. Оценки грубые, это гипотезы.</p>
+      </div>
+      <div class="grid g3" id="ideas"></div>
+      <div class="card">
+        <h3>Семья покупает не один раз: мини-расчёт</h3>
+        <div class="sliders" id="slLtv"></div>
+        <div class="kpis" id="kpisLtv" style="margin-top:14px"></div>
+      </div>
+      <div class="card">
+        <h3>Как это связано с ужином 26 октября</h3>
+        <p class="small">За столом будут застройщик, владелица завода остекления коммерческих объектов, бизнес-блогеры и основательница PR-агентства. Каждый может войти в проект не только деньгами:</p>
+        <div class="grid g2 small">
+          <div><b>Недвижимость и стройка.</b> Помещение или ремонт под проект за процент выручки. Самый ценный вклад: снимает до половины сметы и решает главный юридический вопрос с местом.</div>
+          <div><b>Производство и отделка.</b> Фасад, остекление, отделка по себестоимости или в зачёт участия.</div>
+          <div><b>Медиа и блогеры.</b> Разговор о нише, интервью с Ксенией, вечера. Это бренд без рекламного бюджета.</div>
+          <div><b>PR-агентство.</b> Вечера памяти с партнёрами-брендами: «Хроника» получает доверие, агентство — новую нишу без конкурентов.</div>
+        </div>
+        <p class="small muted" style="margin-top:10px">Путь: ужин (знакомство, без цифр) → встреча через 2–7 дней с этой моделью → выбор формата → юрист → помещение.</p>
+      </div>
+    </section>
+
+    <!-- ВОПРОСЫ ДАНИИЛУ -->
+    <section id="ask" class="stack" hidden>
+      <div>
+        <h2>Что нужно от Даниила, чтобы модель стала настоящей</h2>
+        <p class="lead">Отмечайте, что уже получено. Когда цифры придут, их вписывают на вкладке «Сегодня», и вся модель пересчитается.</p>
+      </div>
+      <div class="card" id="askList"></div>
+      <div class="card">
+        <h3>Структура встречи с партнёром после ужина (20 минут)</h3>
+        <ol class="list small">
+          <li>Кто мы: Даниил, команда, сколько лет в сфере, сколько семей помогли.</li>
+          <li>Рынок: Петербург больше 9 млрд ₽ в год, рост 10–12%, брендов почти нет.</li>
+          <li>Проблема семьи: непонятно, где близкий и за что платишь.</li>
+          <li>Решение: зал прощания, комната для семьи, прозрачная смета; потом своё хранение.</li>
+          <li>Почему мы: опыт, база, прямые договорённости с фабриками, бренд и вечера.</li>
+          <li>Цифры сегодня: реальные заказы, чек, маржа за 12 месяцев.</li>
+          <li>Смета Этапа 1 и что в неё входит.</li>
+          <li>Три сценария: осторожный, базовый, смелый. Где точка безубыточности.</li>
+          <li>Формат партнёрства на выбор и что получает партнёр в каждом сценарии.</li>
+          <li>Риски и как закрываем: юрист, помещение, этапы.</li>
+          <li>Следующий шаг: что делаем в ближайшие 2 недели.</li>
+        </ol>
+      </div>
+    </section>
+
+    <p class="foot">Модель собрана 25.10.2026. Рыночные данные из открытых источников (ссылки во вкладке «Рынок»), всё о самой «Хронике» — допущения до получения реальных цифр. Не является публичной офертой и не обещает доходность. Допущения сохраняются в этом браузере.</p>
+  </div>
+</main>
+
+<script src="model.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const MONTHS = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  const KEY = 'xr-finmodel-v1';
+
+  // ---------- форматирование ----------
+  function money(x, opt) {
+    if (x == null || !isFinite(x)) return '—';
+    const a = Math.abs(x), sign = x < 0 ? '−' : '';
+    if (a >= 1e6) return sign + (a / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace('.', ',').replace(/,0+$/, '').replace(/(,\d)0$/, '$1') + ' млн ₽';
+    if (a >= 1e3) return sign + Math.round(a / 1e3) + ' тыс. ₽';
+    return sign + Math.round(a) + ' ₽';
+  }
+  const int = x => Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const pct = (x, d) => x == null || !isFinite(x) ? '—' : (x * 100).toFixed(d == null ? 0 : d).replace('.', ',') + '%';
+  function monthLabel(p, m) {
+    const idx = p.startMonth - 1 + m - 1;
+    return MONTHS[idx % 12] + ' ' + (p.startYear + Math.floor(idx / 12));
+  }
+  function plural(n, a, b, c) { n = Math.abs(n) % 100; const n1 = n % 10; if (n > 10 && n < 20) return c; if (n1 > 1 && n1 < 5) return b; if (n1 === 1) return a; return c; }
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+  // ---------- состояние ----------
+  const TODAY_KEYS = ['ordersNow', 'checkNow', 'marginNow', 'cpa', 'fixedNow', 'sqGrowth'];
+  const FIN_KEYS = ['discount', 'tvMultiple', 'reserve', 'taxRate', 'contingency'];
+  const INV_KEYS = ['investment', 'rsPct', 'rsCap', 'loanRate', 'loanGrace', 'loanTerm', 'profitShare'];
+
+  function freshState() {
+    const today = {}, fin = {}, inv = {};
+    TODAY_KEYS.forEach(k => today[k] = DEFAULTS[k]);
+    FIN_KEYS.forEach(k => fin[k] = DEFAULTS[k]);
+    INV_KEYS.forEach(k => inv[k] = DEFAULTS[k]);
+    return { variant: 'stage1', scenario: 'base', tab: 'sum', today, fin, inv, proj: scenarioInput('base', 'stage1'), over: {},
+      seasonality: true, startYear: DEFAULTS.startYear, startMonth: DEFAULTS.startMonth, checks: {}, ltv: { share: 0.22, check: 70000, margin: 0.35, subs: 0.08, subPrice: 2000 } };
+  }
+  let S;
+  try { S = Object.assign(freshState(), JSON.parse(localStorage.getItem(KEY) || 'null') || {}); } catch (e) { S = freshState(); }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  function common() {
+    return Object.assign({}, S.today, S.fin, { seasonality: S.seasonality, startYear: S.startYear, startMonth: S.startMonth });
+  }
+  function input() { return Object.assign(common(), S.proj, S.inv, { over: S.over }); }
+  function inputFor(variant, scenario) { return Object.assign(common(), scenarioInput(scenario, variant), S.inv, { investment: 0 }); }
+
+  // ---------- переключатели ----------
+  const VAR_ORDER = ['brand', 'stage1', 'full'];
+  const SC_ORDER = ['pess', 'base', 'opt'];
+  function segs() {
+    $('segVariant').innerHTML = VAR_ORDER.map(v => `<button data-v="${v}" aria-pressed="${S.variant === v}">${VARIANTS[v].short}</button>`).join('');
+    $('segScenario').innerHTML = SC_ORDER.map(s => `<button data-s="${s}" aria-pressed="${S.scenario === s}">${SCENARIOS[s].label}</button>`).join('');
+  }
+  $('segVariant').addEventListener('click', e => {
+    const v = e.target.closest('button'); if (!v) return;
+    S.variant = v.dataset.v; S.proj = scenarioInput(S.scenario, S.variant); S.over = {};
+    segs(); buildProjectSliders(); recalc();
+  });
+  $('segScenario').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    S.scenario = b.dataset.s; S.proj = scenarioInput(S.scenario, S.variant);
+    segs(); buildProjectSliders(); recalc();
+  });
+  $('resetBtn').addEventListener('click', () => {
+    if (!confirm('Вернуть все допущения к исходным? Отметки в чек-листах сохранятся.')) return;
+    const checks = S.checks; S = freshState(); S.checks = checks; save(); location.reload();
+  });
+
+  const TABS = [['sum', 'Итог'], ['market', 'Рынок'], ['today', 'Сегодня'], ['project', 'Проект'], ['cash', 'По месяцам'], ['investor', 'Партнёру'], ['sens', 'Что влияет'], ['risks', 'Риски и закон'], ['growth', 'Как раскрутить'], ['ask', 'Вопросы Даниилу']];
+  $('tabs').innerHTML = TABS.map(([id, t]) => `<button role="tab" data-t="${id}">${t}</button>`).join('');
+  function openTab(id) {
+    S.tab = id; save();
+    document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.t === id));
+    document.querySelectorAll('main section').forEach(s => s.hidden = s.id !== id);
+    if (id === 'sens') renderSens();
+  }
+  $('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { openTab(b.dataset.t); window.scrollTo({ top: 0 }); } });
+
+  // ---------- ползунки ----------
+  function slider(host, obj, key, label, min, max, step, fmt, hint) {
+    const d = document.createElement('div');
+    d.className = 'sl';
+    d.innerHTML = `<div class="top"><span>${label}</span><b></b></div><input type="range" min="${min}" max="${max}" step="${step}" aria-label="${esc(label)}">${hint ? `<div class="hint">${hint}</div>` : ''}`;
+    const r = d.querySelector('input'), out = d.querySelector('b');
+    r.value = obj[key];
+    out.textContent = fmt(+r.value);
+    r.addEventListener('input', () => { obj[key] = +r.value; out.textContent = fmt(+r.value); recalc(); });
+    host.appendChild(d);
+  }
+  const fRub = x => int(x) + ' ₽';
+  const fPct = x => pct(x);
+  const fPct1 = x => pct(x, 1);
+  const fMon = x => x + ' мес.';
+
+  function buildTodaySliders() {
+    const h = $('slToday'); h.innerHTML = '';
+    slider(h, S.today, 'ordersNow', 'Семей в месяц сейчас', 3, 60, 1, x => x, 'Среднее за последние 12 месяцев');
+    slider(h, S.today, 'checkNow', 'Средний чек сейчас', 40000, 200000, 1000, fRub, 'Всё, что платит семья «Хронике»');
+    slider(h, S.today, 'marginNow', 'Маржа с заказа сейчас', 0.25, 0.7, 0.01, fPct, 'После товаров, подрядчиков, крематория, кладбища');
+    slider(h, S.today, 'cpa', 'Цена привлечения одной семьи', 0, 40000, 500, fRub, 'Директ и другая реклама ÷ число заказов');
+    slider(h, S.today, 'fixedNow', 'Постоянные расходы сейчас в месяц', 0, 600000, 10000, fRub, 'Телефония, офис, зарплаты вне заказов');
+    slider(h, S.today, 'sqGrowth', 'Рост без проекта, в год', 0, 0.3, 0.01, fPct, 'Насколько «Хроника» вырастет и без зала');
+  }
+  function buildProjectSliders() {
+    const h = $('slProject'); h.innerHTML = '';
+    const P = S.proj;
+    if (P.prepMonths == null) P.prepMonths = DEFAULTS.prepMonths;
+    if (P.rampMonths == null) P.rampMonths = DEFAULTS.rampMonths;
+    if (P.sessionPrice == null) P.sessionPrice = DEFAULTS.sessionPrice;
+    if (P.rentRate == null) P.rentRate = DEFAULTS.rentRate;
+    slider(h, P, 'prepMonths', 'Подготовка до открытия', 1, 12, 1, fMon, 'Поиск помещения, согласования, ремонт');
+    slider(h, P, 'ordersTarget', 'Семей в месяц после выхода на план', 5, 100, 1, x => x, 'Город: около 5 200 прощаний в месяц');
+    slider(h, P, 'rampMonths', 'Месяцев до выхода на план', 3, 36, 1, fMon);
+    slider(h, P, 'checkHall', 'Средний чек после проекта', 50000, 250000, 1000, fRub);
+    slider(h, P, 'marginHall', 'Маржа с заказа после проекта', 0.25, 0.75, 0.01, fPct);
+    if (S.variant !== 'brand') {
+      slider(h, P, 'sessionsTarget', 'Аренд зала другим агентствам в месяц', 0, 120, 1, x => x, 'На плане; растут вместе с заказами');
+      slider(h, P, 'sessionPrice', 'Цена одной аренды зала', 2000, 25000, 500, fRub, 'Конкуренты: 3 500–8 000 ₽ за 45–60 мин');
+      slider(h, P, 'area', 'Площадь помещения', 60, 500, 10, x => x + ' м²');
+      slider(h, P, 'rentRate', 'Аренда за м² в месяц', 0, 4000, 50, fRub, 'Объявления 2026: ~950–1 800 ₽ на окраинах');
+      slider(h, P, 'repairRate', 'Ремонт и инженерия за м²', 0, 70000, 500, fRub);
+    }
+    $('seasonChk').checked = !!S.seasonality;
+  }
+  $('seasonChk').addEventListener('change', e => { S.seasonality = e.target.checked; recalc(); });
+  (function startOptions() {
+    const sel = $('startSel'); const opts = [];
+    for (let y = 2026; y <= 2028; y++) for (let m = 1; m <= 12; m++) { if (y === 2026 && m < 11) continue; opts.push([y, m]); }
+    sel.innerHTML = opts.map(([y, m]) => `<option value="${y}-${m}">${MONTHS[m - 1]} ${y}</option>`).join('');
+    sel.value = S.startYear + '-' + S.startMonth;
+    sel.addEventListener('change', () => { const [y, m] = sel.value.split('-').map(Number); S.startYear = y; S.startMonth = m; recalc(); });
+  })();
+
+  function buildFinSliders() {
+    const h = $('slFin'); h.innerHTML = '';
+    slider(h, S.fin, 'discount', 'Ставка дисконтирования (сколько хочет партнёр)', 0.1, 0.5, 0.01, fPct, 'Ключевая ставка 14%, плюс премия за риск');
+    slider(h, S.fin, 'tvMultiple', 'Стоимость бизнеса в конце, годовых прибылей', 0, 6, 0.5, x => '× ' + String(x).replace('.', ','), 'Малый офлайн-бизнес обычно оценивают в 2–4 годовых прибыли');
+    slider(h, S.fin, 'reserve', 'Запас сверх пиковой потребности', 0, 0.4, 0.01, fPct);
+    slider(h, S.fin, 'contingency', 'Непредвиденное в смете', 0, 0.3, 0.01, fPct);
+    slider(h, S.fin, 'taxRate', 'Налог с прибыли (упрощёнка)', 0, 0.25, 0.01, fPct, '15% «доходы минус расходы»');
+  }
+  function buildInvSliders() {
+    const h = $('slInvest'); h.innerHTML = '';
+    slider(h, S.inv, 'investment', 'Сумма от партнёра (0 = подобрать автоматически)', 0, 40000000, 500000, x => x ? money(x) : 'авто');
+    slider(h, S.inv, 'rsPct', 'Процент выручки проекта партнёру', 0.02, 0.4, 0.005, fPct1);
+    slider(h, S.inv, 'rsCap', 'До возврата суммы ×', 1.2, 3, 0.1, x => '× ' + x.toFixed(1).replace('.', ','));
+    slider(h, S.inv, 'loanRate', 'Ставка займа, годовых', 0.14, 0.4, 0.01, fPct);
+    slider(h, S.inv, 'loanGrace', 'Отсрочка платежей по займу', 0, 30, 1, fMon, 'Проценты копятся и добавляются к долгу');
+    slider(h, S.inv, 'loanTerm', 'Срок погашения после отсрочки', 12, 60, 6, fMon);
+    slider(h, S.inv, 'profitShare', 'Доля партнёра в прибыли проекта', 0.1, 0.9, 0.01, fPct);
+  }
+
+  // ---------- графики ----------
+  function cumChart(series, p) {
+    const svg = $('cumChart'), W = 800, Hh = 280, L = 62, R = 14, T = 14, B = 30;
+    const all = series.flatMap(s => s.r.months.map(x => x.cum));
+    let lo = Math.min(0, ...all), hi = Math.max(0, ...all);
+    if (hi - lo < 1) hi = lo + 1;
+    const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
+    const n = series[0].r.months.length;
+    const X = i => L + (W - L - R) * i / (n - 1), Y = v => T + (Hh - T - B) * (hi - v) / (hi - lo);
+    let g = '';
+    const step = niceStep((hi - lo) / 5);
+    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+      g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" ${Math.abs(v) < 1 ? 'stroke-width="1.5" stroke="var(--muted)"' : ''}/>`;
+      g += `<text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${axisMoney(v)}</text>`;
+    }
+    for (let i = 0; i < n; i += 12) g += `<text x="${X(i)}" y="${Hh - 8}" text-anchor="start">${monthLabel(p, i + 1)}</text>`;
+    const open = p.prepMonths;
+    g += `<line x1="${X(open)}" x2="${X(open)}" y1="${T}" y2="${Hh - B}" stroke="var(--accent)" stroke-dasharray="4 4"/><text x="${X(open) + 6}" y="${T + 12}">открытие</text>`;
+    series.forEach(s => {
+      const d = s.r.months.map((x, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(x.cum).toFixed(1)).join(' ');
+      g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.main ? 3 : 2}" ${s.main ? '' : 'stroke-dasharray="6 5" opacity=".85"'} stroke-linejoin="round"/>`;
+    });
+    svg.innerHTML = g;
+    $('cumLegend').innerHTML = series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join('');
+  }
+  function niceStep(raw) {
+    const p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / p;
+    return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+  }
+  function axisMoney(v) { const a = Math.abs(v); if (a < 1) return '0'; const s = v < 0 ? '−' : ''; return a >= 1e6 ? s + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace('.', ',') + ' млн' : s + Math.round(a / 1e3) + ' тыс.'; }
+
+  function barChart(r) {
+    const svg = $('barChart'), W = 800, Hh = 260, L = 62, R = 10, T = 12, B = 28;
+    const vals = r.months.map(x => x.inc);
+    let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals); if (hi - lo < 1) hi = lo + 1;
+    const n = vals.length, bw = (W - L - R) / n;
+    const Y = v => T + (Hh - T - B) * (hi - v) / (hi - lo);
+    let g = '';
+    const step = niceStep((hi - lo) / 5);
+    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+      g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${axisMoney(v)}</text>`;
+    }
+    vals.forEach((v, i) => {
+      const y0 = Y(0), y1 = Y(v);
+      g += `<rect x="${(L + i * bw + 1).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" height="${Math.max(1, Math.abs(y1 - y0)).toFixed(1)}" fill="${v >= 0 ? 'var(--pos)' : 'var(--neg)'}" opacity=".8" rx="1"><title>${monthLabel(r.p, i + 1)}: ${money(v)}</title></rect>`;
+    });
+    for (let i = 0; i < n; i += 12) g += `<text x="${L + i * bw}" y="${Hh - 8}">${monthLabel(r.p, i + 1)}</text>`;
+    svg.innerHTML = g;
+  }
+
+  // ---------- расчёт и вывод ----------
+  let R0;
+  function recalc() {
+    save();
+    const inp = input();
+    R0 = run(inp);
+    renderSummary(inp);
+    renderToday();
+    renderProject();
+    renderCash();
+    renderInvestor(inp);
+    renderLtv();
+    if (S.tab === 'sens') renderSens();
+  }
+
+  function paybackText(r) {
+    if (r.payback == null) return 'не окупается за 5 лет';
+    return r.payback + '-й месяц (' + monthLabel(r.p, r.payback) + ')';
+  }
+
+  function renderSummary(inp) {
+    const r = R0, p = r.p, v = VARIANTS[S.variant];
+    $('sumTitle').textContent = v.name + ' · ' + SCENARIOS[S.scenario].label.toLowerCase() + ' сценарий';
+    $('sumSub').textContent = `Старт ${monthLabel(p, 1)}, открытие ${monthLabel(p, p.prepMonths + 1)}, на плане ${p.ordersTarget} ${plural(p.ordersTarget, 'семья', 'семьи', 'семей')} в месяц через ${p.rampMonths} мес. после открытия, средний чек ${int(p.checkHall)} ₽, маржа ${pct(p.marginHall)}.`;
+    const pb = r.payback;
+    const tiles = [
+      [money(r.capex), 'Смета запуска с непредвиденными'],
+      [money(r.investment), 'Нужно денег с запасом (пиковый минус + ' + pct(p.reserve) + ')', r.payback == null ? 'warn' : ''],
+      [pb == null ? 'нет' : pb + ' мес.', pb == null ? 'Окупаемость: за 5 лет не окупается' : 'Окупаемость с начала проекта (' + monthLabel(p, pb) + ')', pb == null ? 'warn' : (pb <= 36 ? 'good' : '')],
+      [money(r.months[r.months.length - 1].cum), 'Деньги проекта за 5 лет после возврата вложений', r.months[r.months.length - 1].cum < 0 ? 'warn' : 'good'],
+      [money(r.last12), 'Дополнительная прибыль «Хроники» за 5-й год'],
+      [Math.ceil(r.beOrders) + ' ' + plural(Math.ceil(r.beOrders), 'семья', 'семьи', 'семей'), 'В месяц, чтобы проект хотя бы не уменьшал доход «Хроники»'],
+      [money(r.npv), 'NPV при ' + pct(p.discount) + ' годовых', r.npv < 0 ? 'warn' : 'good'],
+      [r.irr == null ? '—' : pct(r.irr), 'Доходность проекта, годовых (IRR)']
+    ];
+    $('kpis').innerHTML = tiles.map(([v, k, c]) => `<div class="kpi ${c || ''}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+
+    const colors = { pess: 'var(--s0)', base: 'var(--s2)', opt: 'var(--s3)' };
+    const series = SC_ORDER.map(sc => {
+      const rr = sc === S.scenario ? r : run(Object.assign(inputFor(S.variant, sc), { over: S.over }));
+      return { r: rr, color: colors[sc], label: SCENARIOS[sc].label + (sc === S.scenario ? ' (выбран, с вашими правками)' : ''), main: sc === S.scenario };
+    });
+    cumChart(series, p);
+    renderCompare();
+    renderConclusions();
+  }
+
+  function renderCompare() {
+    let h = '<thead><tr><th>Вариант и сценарий</th><th>Смета</th><th>Нужно денег</th><th>Семей на плане</th><th>Окупаемость</th><th>Деньги за 5 лет</th><th>Безубыточно от</th></tr></thead><tbody>';
+    VAR_ORDER.forEach(v => SC_ORDER.forEach(sc => {
+      const r = run(inputFor(v, sc));
+      const sel = v === S.variant && sc === S.scenario;
+      const fin = r.months[r.months.length - 1].cum;
+      h += `<tr class="${sel ? 'sel' : ''}"><td>${VARIANTS[v].short} · ${SCENARIOS[sc].label.toLowerCase()}</td><td>${money(r.capex)}</td><td>${r.payback == null ? '<span class="flag neg">не окупается</span>' : money(r.investment)}</td><td>${r.p.ordersTarget}</td><td>${r.payback == null ? '—' : r.payback + ' мес.'}</td><td class="${fin < 0 ? 'neg' : 'pos'}">${money(fin)}</td><td>${Math.ceil(r.beOrders)} сем./мес.</td></tr>`;
+    }));
+    $('compare').innerHTML = h + '</tbody>';
+  }
+
+  function renderConclusions() {
+    const now = run(inputFor('stage1', 'base'));
+    const full = run(inputFor('full', 'base'));
+    const st = now, br = run(inputFor('brand', 'base'));
+    const fullP48 = ordersForPayback(inputFor('full', 'base'), 48);
+    const fullP36 = ordersForPayback(inputFor('full', 'base'), 36);
+    const t = S.today;
+    const unitNow = t.checkNow * t.marginNow - t.cpa;
+    const yearNow = (t.ordersNow * unitNow - t.fixedNow) * 12;
+    const rsNeed = rsPctNeeded(Object.assign(inputFor('stage1', 'base'), { rsCap: S.inv.rsCap }), 54);
+    const psNeed = psShareNeeded(inputFor('stage1', 'base'), 0.25);
+    const li = [];
+    li.push(`<b>Сейчас</b> (по допущениям): ${t.ordersNow} ${plural(t.ordersNow, 'семья', 'семьи', 'семей')} в месяц, чек ${int(t.checkNow)} ₽, с одной семьи после товаров, подрядчиков и рекламы остаётся около <b>${money(unitNow)}</b>. Это около <b>${money(yearNow)}</b> в год до налога. Проект сравниваем именно с этим, а не с нулём.`);
+    li.push(`<b>Сразу строить полный похоронный дом со своим хранением рискованно.</b> Смета около ${money(full.capex)}, в базовом сценарии он ${full.payback == null ? '<b>не окупается за 5 лет</b>' : 'окупается только к ' + full.payback + '-му месяцу'}. ${fullP48 ? `Чтобы окупиться за 4 года, нужно около <b>${fullP48} семей в месяц</b>${fullP36 ? `, за 3 года около ${fullP36}` : ''}. Это в ${(fullP48 / t.ordersNow).toFixed(1).replace('.', ',')} раза больше, чем сейчас.` : 'Даже 200 семей в месяц не окупают его за 4 года.'}`);
+    li.push(`<b>Лучший вход: Этап 1</b>, зал прощания и комната для семьи, хранение у партнёров. Смета около ${money(st.capex)}, денег с запасом около <b>${money(st.investment)}</b>, окупаемость ${st.payback == null ? 'за 5 лет не наступает' : 'на ' + st.payback + '-м месяце от старта'}. Безубыточность против «как сейчас» от <b>${Math.ceil(st.beOrders)} семей в месяц</b>.`);
+    li.push(`<b>Этап 0 (бренд без помещения)</b> стоит около ${money(br.capex)} и сам по себе даёт ${money(br.last12)} в год на плане. Его смысл не в деньгах, а в проверке главного риска: растёт ли поток семей. Делать сейчас, параллельно с поиском помещения.`);
+    li.push(`<b>Сильнее всего на результат влияют три цифры:</b> маржа с заказа, средний чек и число семей. Аренда и смета влияют в несколько раз слабее. Поэтому первое дело — реальные цифры Даниила за 12 месяцев.`);
+    li.push(`<b>Партнёру в Этапе 1 (базовый сценарий)</b> честно предлагать около <b>${rsNeed ? pct(rsNeed, 1) : '—'} выручки проекта</b> до возврата ×${S.inv.rsCap.toFixed(1).replace('.', ',')} за ~4,5 года${psNeed ? `, либо около <b>${pct(psNeed)} прибыли</b> проекта (доходность партнёра 25% годовых)` : ''}. Заём под ${pct(S.inv.loanRate)} в базовом сценарии ${st.investor.loan.dscrMin >= 1 ? 'проходит' : '<b>не тянет</b>: платёж больше, чем приносит проект в первые годы'}. Условия станут мягче, если партнёр даст помещение, если часть вложит сама «Хроника» или если сначала доказать рост.`);
+    li.push(`<b>Рекомендация — лестница.</b> До весны 2027: Этап 0, реальные цифры, юрист и поиск помещения. Когда три месяца подряд 22–25 семей в месяц — Этап 1 с партнёром. Своё хранение — когда стабильно 45+ семей и требования к помещению проверены.`);
+    $('conclusions').innerHTML = li.map(x => `<li>${x}</li>`).join('');
+  }
+
+  function renderToday() {
+    const t = S.today, unit = t.checkNow * t.marginNow - t.cpa;
+    const tiles = [
+      [money(t.checkNow * t.marginNow), 'Маржа с одной семьи до рекламы'],
+      [money(unit), 'Остаётся с семьи после рекламы'],
+      [money(t.ordersNow * unit - t.fixedNow), 'В месяц до налога'],
+      [money((t.ordersNow * unit - t.fixedNow) * 12), 'В год до налога'],
+      [pct(t.ordersNow / 5200, 2), 'Доля «Хроники» от прощаний в городе']
+    ];
+    $('kpisToday').innerHTML = tiles.map(([v, k]) => `<div class="kpi"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  }
+
+  const CARD_TEXT = {
+    brand: ['Без помещения', 'Сайт с районами и кладбищами, соцсети с Ксенией, вечера с партнёрами, CRM. Проверяет главный риск — поток семей — почти без вложений.'],
+    stage1: ['Зал без хранения', 'Свой зал прощания на 40–60 человек и комната для семьи с образцами. Хранение и подготовка у партнёров-моргов. Зал сдаётся и другим агентствам.'],
+    full: ['Полный цикл', 'Зал, своё бережное хранение на 6 мест, подготовка, спецтранспорт. Максимальный чек и контроль, но самая дорогая смета, строгие требования к помещению и большой штат.']
+  };
+  function renderProject() {
+    const r = R0, v = VARIANTS[S.variant];
+    $('projTitle').textContent = v.name;
+    $('projLead').textContent = S.variant === 'brand'
+      ? 'Вложения только в бренд, сайт и продажи. Помещения нет, поэтому нет аренды и требований к месту.'
+      : `Площадь ${r.p.area} м², аренда ${int(r.p.rentRate)} ₽ за м². Смета ${money(r.capex)}, расходы ${money(r.opex)} в месяц после открытия.`;
+    $('variantCards').innerHTML = VAR_ORDER.map(k => {
+      const rr = run(inputFor(k, 'base'));
+      return `<div class="card ${k === S.variant ? 'dark' : ''}"><h3 style="${k === S.variant ? 'color:inherit;opacity:.7' : ''}">${CARD_TEXT[k][0]}</h3><div style="font-weight:700;margin-bottom:6px">${VARIANTS[k].short}</div><p class="small">${CARD_TEXT[k][1]}</p><p class="small ${k === S.variant ? '' : 'muted'}" style="margin:0">Смета ${money(rr.capex)} · ${money(rr.opex)}/мес · безубыточно от ${Math.ceil(rr.beOrders)} семей</p></div>`;
+    }).join('');
+    table('capexTable', r.capexRows, 'Итого с непредвиденными ' + pct(r.p.contingency), r.capex, r.p.capexMult);
+    table('opexTable', r.opexRows, 'Итого в месяц', r.opex, r.p.opexMult);
+    $('capexFlag').textContent = money(r.capex);
+    $('opexFlag').textContent = money(r.opex) + ' в мес.';
+  }
+  function table(id, rows, totalLabel, total) {
+    let h = '<thead><tr><th>Статья</th><th>Сумма, ₽</th></tr></thead><tbody>';
+    rows.forEach(x => {
+      h += `<tr><td>${esc(x.label)}</td><td><input class="cell${x.edited ? ' edited' : ''}" type="number" step="1000" min="0" data-id="${x.id}" value="${Math.round(x.value)}" aria-label="${esc(x.label)}"></td></tr>`;
+    });
+    h += `<tr class="total"><td>${totalLabel}</td><td>${int(total)}</td></tr></tbody>`;
+    const el = $(id);
+    el.innerHTML = h;
+    el.querySelectorAll('input.cell').forEach(inp => inp.addEventListener('change', () => {
+      const row = rows.find(x => x.id === inp.dataset.id);
+      const val = +inp.value;
+      if (row && Math.round(val) === Math.round(row.base)) delete S.over[inp.dataset.id]; else S.over[inp.dataset.id] = val;
+      recalc();
+    }));
+  }
+
+  function renderCash() {
+    const r = R0;
+    barChart(r);
+    let h = '<thead><tr><th>Год</th><th>Семей</th><th>Выручка с проектом</th><th>Прибыль с проектом</th><th>Прибыль без проекта</th><th>Разница</th><th>Вложения</th><th>Накоплено</th></tr></thead><tbody>';
+    r.years.forEach(y => {
+      h += `<tr><td>${y.y}-й (${y.year})</td><td>${int(y.orders)}</td><td>${money(y.rev)}</td><td>${money(y.net)}</td><td>${money(y.sqNet)}</td><td class="${y.incOp < 0 ? 'neg' : 'pos'}">${money(y.incOp)}</td><td>${y.capex ? '−' + money(y.capex) : '—'}</td><td class="${y.cum < 0 ? 'neg' : 'pos'}">${money(y.cum)}</td></tr>`;
+    });
+    $('yearTable').innerHTML = h + '</tbody>';
+    let m = '<thead><tr><th>Месяц</th><th>Семей</th><th>Аренд зала</th><th>Выручка</th><th>Прибыль</th><th>Без проекта</th><th>Разница</th><th>Вложения</th><th>Накоплено</th></tr></thead><tbody>';
+    r.months.forEach(x => {
+      m += `<tr><td>${x.m}. ${monthLabel(r.p, x.m)}${x.m === r.p.prepMonths + 1 ? ' <span class="flag">открытие</span>' : ''}</td><td>${x.orders.toFixed(1).replace('.', ',')}</td><td>${Math.round(x.sessions)}</td><td>${money(x.rev)}</td><td>${money(x.net)}</td><td>${money(x.sqNet)}</td><td class="${x.incOp < 0 ? 'neg' : 'pos'}">${money(x.incOp)}</td><td>${x.capex ? '−' + money(x.capex) : '—'}</td><td class="${x.cum < 0 ? 'neg' : 'pos'}">${money(x.cum)}</td></tr>`;
+    });
+    $('monthTable').innerHTML = m + '</tbody>';
+  }
+
+  function renderInvestor(inp) {
+    const r = R0, i = r.investor, p = r.p;
+    $('invAuto').textContent = S.inv.investment ? 'Сумма задана вручную.' : `Подобрано автоматически: самый глубокий минус проекта ${money(r.peak)} плюс запас ${pct(p.reserve)}, округлено до 0,5 млн ₽.`;
+    $('invWarn').innerHTML = r.payback == null
+      ? `<div class="alert">В этом варианте и сценарии проект за 5 лет не окупается. Привлекать деньги под такие допущения нельзя: сначала нужно больше семей, выше чек или меньше смета.</div>`
+      : `<div class="ok">Проект окупается на ${r.payback}-м месяце. Ниже — что получит партнёр в каждом формате при сумме ${money(i.I)}.</div>`;
+    const cash = c => c < 0 ? `<span class="flag neg">не хватает ${money(-c)} на выплаты</span>` : `<span class="flag pos">денег на выплаты хватает</span>`;
+    const cards = [
+      ['Процент от выручки до возврата', `${pct(p.rsPct, 1)} дополнительной выручки каждый месяц после открытия, пока партнёр не получит ${money(i.rs.cap)} (×${p.rsCap.toFixed(1).replace('.', ',')}).`,
+        [['Партнёр получит за 5 лет', money(i.rs.paid)], ['Возврат ×' + p.rsCap.toFixed(1).replace('.', ','), i.rs.capMonth ? 'на ' + i.rs.capMonth + '-м месяце' : 'за 5 лет не наступит'], ['Доходность партнёра', pct(i.rs.irr) + ' годовых']], cash(i.rs.minCash),
+        'Удобно для офлайн-точки: платим, только когда есть выручка, и не отдаём бизнес навсегда.'],
+      ['Заём под процент', `${pct(p.loanRate)} годовых, отсрочка ${p.loanGrace} мес. (проценты добавляются к долгу), потом ${p.loanTerm} равных платежей.`,
+        [['Ежемесячный платёж', money(i.loan.pmt)], ['Всего вернём', money(i.loan.paid)], ['Запас прочности', isFinite(i.loan.dscrMin) ? (i.loan.dscrMin >= 1.2 ? 'есть' : i.loan.dscrMin >= 1 ? 'впритык' : 'нет') + ' (×' + i.loan.dscrMin.toFixed(2).replace('.', ',') + ')' : '—']], cash(i.loan.minCash),
+        'Бизнес целиком остаётся у Даниила, но платить нужно даже в плохой месяц. Запас прочности — во сколько раз прибыль проекта в худший месяц выплат больше платежа; банки хотят от 1,2.'],
+      ['Доля в прибыли проекта', `${pct(p.profitShare)} прибыли проекта каждый месяц без срока, плюс доля в стоимости бизнеса. Через ООО под проект или договор простого товарищества.`,
+        [['Выплаты за 5 лет', money(i.ps.paid)], ['Плюс доля стоимости бизнеса', money(i.ps.tv)], ['Доходность партнёра', pct(i.ps.irr) + ' годовых']], '',
+        'Партнёр разделяет риск: нет прибыли — нет выплат. Зато делим прибыль и решения надолго.']
+    ];
+    $('invCards').innerHTML = cards.map(([t, d, rows, c, n]) => `<div class="card"><h3>${t}</h3><p class="small">${d}</p><div class="tablewrap" style="border:0;margin:8px 0"><table><tbody>${rows.map(([a, b]) => `<tr><td>${a}</td><td><b>${b}</b></td></tr>`).join('')}</tbody></table></div>${c ? `<p style="margin:6px 0">${c}</p>` : ''}<p class="small muted" style="margin:0">${n}</p></div>`).join('');
+
+    const base = Object.assign({}, inp);
+    const rsN = rsPctNeeded(base, 54), psN = psShareNeeded(base, 0.25), psN2 = psShareNeeded(base, 0.35);
+    let rsCash = null;
+    if (rsN) rsCash = run(Object.assign({}, base, { rsPct: rsN })).investor.rs.minCash;
+    $('fairTerms').innerHTML = r.payback == null ? '<p>При этих допущениях честных условий нет: проект не возвращает деньги.</p>' : `
+      <ul class="list">
+        <li>Чтобы партнёр вернул ×${p.rsCap.toFixed(1).replace('.', ',')} за 4,5 года (к 54-му месяцу), нужно отдавать <b>${rsN ? pct(rsN, 1) : 'больше 60%'}</b> выручки проекта. ${rsCash != null ? (rsCash < 0 ? `При этом проекту не хватит ${money(-rsCash)} на выплаты: нужен запас больше.` : 'Денег проекта на это хватает.') : ''}</li>
+        <li>Чтобы доля в прибыли дала партнёру 25% годовых, ему нужно <b>${psN ? pct(psN) : 'больше 100%'}</b> прибыли проекта; для 35% годовых — <b>${psN2 ? pct(psN2) : 'больше 100%'}</b>.</li>
+        <li>Заём под ${pct(p.loanRate)}: ${isFinite(i.loan.dscrMin) && i.loan.dscrMin >= 1.2 ? 'проект обслуживает платежи с запасом.' : isFinite(i.loan.dscrMin) && i.loan.dscrMin >= 1 ? 'платежи покрываются впритык, нужна отсрочка подлиннее.' : 'в худшие месяцы платёж больше, чем приносит проект. Нужна отсрочка подлиннее, меньшая сумма займа или смешанный формат.'}</li>
+      </ul>`;
+  }
+
+  function renderSens() {
+    const inp = input();
+    const s = sensitivity(inp);
+    const max = Math.max(1, ...s.rows.map(r => Math.max(Math.abs(r.lo), Math.abs(r.hi))));
+    $('tornado').innerHTML = s.rows.map(r => {
+      const bar = (v, cls) => { const w = Math.abs(v) / max * 50; const left = v < 0 ? 50 - w : 50; return `<span class="b ${v < 0 ? 'n' : 'p'}" style="left:${left}%;width:${w}%" title="${money(v)}"></span>`; };
+      return `<div class="r"><div>${r.label}<div class="small muted">−20%: ${money(r.lo)} · +20%: ${money(r.hi)}</div></div><div class="track"><span class="mid"></span>${bar(r.lo)}${bar(r.hi)}</div></div>`;
+    }).join('');
+    $('sensBase').textContent = 'NPV проекта при текущих допущениях: ' + money(s.base) + '. Слева от черты — насколько NPV падает, справа — насколько растёт.';
+    $('discTxt').textContent = pct(R0.p.discount);
+    const o36 = ordersForPayback(inp, 36), o48 = ordersForPayback(inp, 48), o60 = ordersForPayback(inp, 60);
+    const tiles = [
+      [Math.ceil(R0.beOrders) + ' сем.', 'В месяц, чтобы проект не уменьшал доход «Хроники»'],
+      [o36 ? o36 + ' сем.' : '> 200', 'В месяц на плане, чтобы окупиться за 3 года'],
+      [o48 ? o48 + ' сем.' : '> 200', 'Чтобы окупиться за 4 года'],
+      [o60 ? o60 + ' сем.' : '> 200', 'Чтобы окупиться за 5 лет']
+    ];
+    $('kpisSens').innerHTML = tiles.map(([v, k]) => `<div class="kpi"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  }
+
+  // ---------- риски, чек-листы, идеи ----------
+  const RISKS = [
+    ['Семей меньше, чем в плане', 'высокая / сильный', 'Сначала Этап 0 и порог 22–25 семей три месяца подряд. Считаем заказы в CRM каждый месяц.'],
+    ['Помещение: правило 50 м, соседи, долгие согласования', 'высокая / сильный', 'Юрист и консультация в Роспотребнадзоре до аренды. Ищем отдельно стоящие здания и промзоны. Договор с условием расторжения без потерь.'],
+    ['Новый закон о похоронном деле, реестр, лицензии', 'средняя / средний', 'Работаем бело с первого дня. Законопроект 2022 года требовал оборудование и спецтранспорт: у нас они будут, это скорее плюс.'],
+    ['Давление крупных игроков', 'средняя / сильный', 'Не конкурируем за первый контакт серыми методами. Растим бренд, рекомендации, прозрачную смету. Юрист на связи.'],
+    ['Всё держится на Данииле и Ксении', 'средняя / сильный', 'Регламенты, второй координатор, обучение. Партнёру это тоже важно.'],
+    ['Налоги: НДС после 20 млн выручки, спорная льгота', 'средняя / средний', 'Бухгалтер с опытом в ОКВЭД 96.03 до старта. Аренду зала другим проверить отдельно.'],
+    ['Неправильная форма сделки', 'средняя / сильный', 'ИП долю не даёт: ООО под проект, заём или простое товарищество. Договоры пишет юрист. Не собираем деньги публично и не обещаем доходность.'],
+    ['Ремонт и оборудование дороже сметы', 'средняя / средний', '10% непредвиденных в смете и 15% запаса сверх потребности. Фиксированная цена в договоре с подрядчиком.'],
+    ['Холодильное оборудование без регистрации', 'низкая / сильный', 'Покупаем только камеры с регистрационным удостоверением медизделия.'],
+    ['Тема смерти в соцсетях: блокировки, негатив', 'низкая / средний', 'Без графики и шуток над умершими, тёплый тон. Правила из плана продвижения.']
+  ];
+  $('riskBody').innerHTML = RISKS.map(([a, b, c]) => `<tr><td>${a}</td><td style="text-align:left;white-space:normal">${b}</td><td style="text-align:left;white-space:normal;min-width:260px">${c}</td></tr>`).join('');
+
+  const LEGAL = [
+    ['l1', 'ОКВЭД 96.03 у ИП и налоговый режим: какой сейчас и что будет при выручке больше 20 млн'],
+    ['l2', 'Юрист по ритуальной сфере: какие санитарные нормы действуют для зала прощания с хранением и без него, расстояние до жилья'],
+    ['l3', 'Требования к помещению: нежилое назначение, отдельный вход, подъезд спецтранспорта, вентиляция, пожарная безопасность'],
+    ['l4', 'Хранение: регистрационное удостоверение на холодильную камеру, порядок приёма, документы, договоры с моргами'],
+    ['l5', 'Юрлицо под проект: ООО (если партнёр хочет долю) или договор займа / простого товарищества'],
+    ['l6', 'Договор с партнёром: что вносит каждый, как делим деньги, как выйти из проекта'],
+    ['l7', 'Письменно закрепить договорённости внутри команды: кто за что отвечает и кто что получает'],
+    ['l8', 'Статус законопроекта «О похоронном деле»: проверить на sozd.duma.gov.ru перед встречами']
+  ];
+  const ASK = [
+    ['a1', 'Заказы по месяцам за последние 12 месяцев (сколько семей)'],
+    ['a2', 'Средний чек, минимальный и максимальный; доля кремаций'],
+    ['a3', 'Сколько остаётся с заказа после товаров, подрядчиков, крематория и кладбища (маржа)'],
+    ['a4', 'Бюджет Директа в месяц, сколько звонков и сколько из них стали заказами'],
+    ['a5', 'Откуда приходят семьи: Директ, сарафан, Авито, рекомендации, другие каналы'],
+    ['a6', 'Постоянные расходы сейчас: телефония, офис, зарплаты, транспорт'],
+    ['a7', 'Свой транспорт и бригада или подряд; сколько стоит на один заказ'],
+    ['a8', 'Сколько сейчас платим за чужие залы, хранение и подготовку на один заказ'],
+    ['a9', 'Условия с фабриками: скидка от розницы, отсрочка платежа'],
+    ['a10', 'Районы и морги, откуда больше всего обращений; есть ли на примете помещения'],
+    ['a11', 'Сколько Даниил готов вложить сам и какой формат партнёрства ему ближе'],
+    ['a12', 'Готов ли открыть ООО под проект; есть ли бухгалтер']
+  ];
+  function checklist(host, items) {
+    host.innerHTML = items.map(([id, t]) => `<label class="chk ${S.checks[id] ? 'done' : ''}"><input type="checkbox" data-id="${id}" ${S.checks[id] ? 'checked' : ''}><span>${t}</span></label>`).join('');
+    host.addEventListener('change', e => {
+      const c = e.target; if (!c.dataset.id) return;
+      S.checks[c.dataset.id] = c.checked; c.closest('.chk').classList.toggle('done', c.checked); save();
+    });
+  }
+  checklist($('legalList'), LEGAL);
+  checklist($('askList'), ASK);
+
+  const IDEAS = [
+    ['Памятники и благоустройство', 'Через 6–12 месяцев семье нужен памятник. Каждая 4–5-я семья, чек 50–100 тыс. ₽, маржа 30–40% с мастерской-партнёром.', 'Расчёт ниже'],
+    ['Уход за местом памяти по подписке', 'Уборка, цветы к памятным датам, фотоотчёт. Регулярные деньги, а не разовые.', '1,5–3 тыс. ₽ в месяц с семьи'],
+    ['Онлайн-трансляция прощания', 'Для родных из других городов и стран. Камера уже в смете зала.', '+3–5 тыс. ₽ к чеку'],
+    ['Фильм памяти', 'Короткое видео о жизни человека из семейных фото и видео для церемонии и для семьи. Монтаж — сильная сторона команды.', '+8–15 тыс. ₽ к чеку'],
+    ['Прижизненный договор', 'Человек заранее выбирает и оплачивает своё прощание, чтобы не оставлять это семье. На Западе это большая часть рынка. Нужен юрист: деньги клиента должны быть защищены.', 'деньги вперёд, лояльность'],
+    ['Аренда зала другим агентствам', 'Уже в модели. Зал простаивает между церемониями «Хроники».', 'в модели'],
+    ['Прощание с питомцами', 'Отдельный бренд и отдельное место (не в зале для людей): церемония, кремация через партнёров, урны. Меньше стигмы, хорошо для соцсетей.', 'отдельная гипотеза'],
+    ['Партнёрства с компаниями', 'Помощь сотрудникам при утрате, юристы по наследству, нотариусы. Только прозрачные цены, без «агентских» схем.', 'стабильный поток'],
+    ['Поминальные обеды', 'Рестораны-партнёры рядом с залом, комиссия за организацию.', '~10% от счёта'],
+    ['Вечера памяти и комьюнити', 'Death Cafe, поэтические вечера, кино, благотворительность. Организатор VZLETAY. Бренд без рекламного бюджета.', 'снижает цену привлечения'],
+    ['Ксения — лицо ниши', '«Мне 21, и я 4 года в ритуальной сфере»: личный блог как главный крючок соцсетей.', 'охваты'],
+    ['Второй зал', 'Когда модель первого доказана, повторить в другом районе или городе.', 'масштаб']
+  ];
+  $('ideas').innerHTML = IDEAS.map(([t, d, e]) => `<div class="card idea"><div class="t">${t}</div><div class="small">${d}</div><div class="e">${e}</div></div>`).join('');
+
+  function buildLtv() {
+    const h = $('slLtv'); h.innerHTML = '';
+    slider(h, S.ltv, 'share', 'Доля семей, кто заказывает памятник', 0, 0.6, 0.01, fPct);
+    slider(h, S.ltv, 'check', 'Средний чек памятника', 20000, 200000, 1000, fRub);
+    slider(h, S.ltv, 'margin', 'Маржа на памятнике', 0.1, 0.6, 0.01, fPct);
+    slider(h, S.ltv, 'subs', 'Доля семей с подпиской на уход', 0, 0.3, 0.01, fPct);
+    slider(h, S.ltv, 'subPrice', 'Подписка в месяц', 500, 5000, 100, fRub);
+  }
+  function renderLtv() {
+    const L = S.ltv, o = R0.p.ordersTarget;
+    const mon = o * L.share * L.check * L.margin;
+    const subsBase = o * 12 * L.subs; // подписок через год
+    const sub = subsBase * L.subPrice * 0.6;
+    const tiles = [
+      [money(mon), `В месяц с памятников при ${o} семьях`],
+      [money(mon * 12), 'В год с памятников'],
+      [Math.round(subsBase) + ' подписок', 'Через год работы'],
+      [money(sub * 12), 'В год с подписки (маржа 60%), растёт каждый год']
+    ];
+    $('kpisLtv').innerHTML = tiles.map(([v, k]) => `<div class="kpi"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  }
+
+  // ---------- старт ----------
+  segs(); buildTodaySliders(); buildProjectSliders(); buildFinSliders(); buildInvSliders(); buildLtv();
+  recalc();
+  openTab(TABS.some(t => t[0] === location.hash.slice(1)) ? location.hash.slice(1) : (S.tab || 'sum'));
+})();
+</script>
+</body>
+</html>
