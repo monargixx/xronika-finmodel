@@ -8,7 +8,7 @@ const VARIANTS = {
   brand: {
     name: 'Шаг 1: бренд, соцсети и вечера, без помещения',
     short: 'Шаг 1 · бренд',
-    area: 0, checkHall: 90000, marginHall: 0.50, sessionsTarget: 0, ordersTarget: 25,
+    area: 0, checkHall: 105000, marginHall: 0.50, sessionsTarget: 0, ordersTarget: 25,
     capex: p => [
       ['b_site', 'Новый сайт и страницы под районы, кладбища, крематории', 350000],
       ['b_shoot', 'Съёмка команды, фото и видео для соцсетей', 250000],
@@ -25,7 +25,7 @@ const VARIANTS = {
   office: {
     name: 'Шаги 2–3: своя офлайн-точка с администратором',
     short: 'Шаги 2–3 · точка',
-    area: 50, checkHall: 92000, marginHall: 0.50, sessionsTarget: 0, ordersTarget: 30,
+    area: 50, checkHall: 107000, marginHall: 0.50, sessionsTarget: 0, ordersTarget: 30,
     capex: p => [
       ['c_proj', 'Юрист, договор аренды, документы', 150000],
       ['c_repair', `Ремонт (${p.area} м² × ${fmtInt(p.repairRate)} ₽)`, p.area * p.repairRate],
@@ -51,7 +51,7 @@ const VARIANTS = {
   stage1: {
     name: 'Шаг 4: зал прощания и комната для семьи, хранение у партнёров',
     short: 'Шаг 4 · зал',
-    area: 130, checkHall: 110000, marginHall: 0.52, sessionsTarget: 35, ordersTarget: 35,
+    area: 130, checkHall: 125000, marginHall: 0.52, sessionsTarget: 35, ordersTarget: 35,
     capex: p => [
       ['c_proj', 'Проект, согласования, юрист', 400000],
       ['c_repair', `Ремонт и инженерия (${p.area} м² × ${fmtInt(p.repairRate)} ₽)`, p.area * p.repairRate],
@@ -76,7 +76,7 @@ const VARIANTS = {
   full: {
     name: 'Шаг 5: своё хранение, полный похоронный дом (если строить с нуля)',
     short: 'Шаг 5 · хранение',
-    area: 220, checkHall: 125000, marginHall: 0.55, sessionsTarget: 40, ordersTarget: 35,
+    area: 220, checkHall: 140000, marginHall: 0.55, sessionsTarget: 40, ordersTarget: 35,
     capex: p => [
       ['c_proj', 'Проект, согласования, юрист, санитарная и пожарная экспертиза', 900000],
       ['c_repair', `Ремонт и инженерия: вентиляция, климат, сантехника, моющаяся отделка зоны хранения (${p.area} м² × ${fmtInt(p.repairRate)} ₽)`, p.area * p.repairRate],
@@ -110,11 +110,11 @@ const DEFAULTS = {
   startYear: 2027, startMonth: 1,
   prepMonths: 6,
   // «Хроника» сейчас: всё это нужно сверить с реальными цифрами Даниила
-  ordersNow: 15, checkNow: 85000, marginNow: 0.50, cpa: 10000, fixedNow: 100000, sqGrowth: 0.05,
+  ordersNow: 15, checkNow: 100000, marginNow: 0.50, cpa: 10000, fixedNow: 100000, sqGrowth: 0.05,
   // «Хроника» после проекта
   area: 130, rentRate: 1700, repairRate: 25000,
   ordersTarget: 35, rampMonths: 18,
-  checkHall: 110000, marginHall: 0.52,
+  checkHall: 125000, marginHall: 0.52,
   sessionsTarget: 35, sessionPrice: 8000, sessionMargin: 0.85,
   capexMult: 1, opexMult: 1, contingency: 0.10,
   over: {},
