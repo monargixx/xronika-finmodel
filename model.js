@@ -6,8 +6,8 @@
 // Каждая строка: [id, название, сумма]. Любую сумму можно переопределить через p.over[id].
 const VARIANTS = {
   brand: {
-    name: 'Этап 0: только бренд, без помещения',
-    short: 'Этап 0 · бренд',
+    name: 'Шаг 1: бренд, соцсети и вечера, без помещения',
+    short: 'Шаг 1 · бренд',
     area: 0, checkHall: 90000, marginHall: 0.50, sessionsTarget: 0, ordersTarget: 25,
     capex: p => [
       ['b_site', 'Новый сайт и страницы под районы, кладбища, крематории', 350000],
@@ -22,9 +22,35 @@ const VARIANTS = {
       ['o_crm', 'CRM, телефония', 15000]
     ]
   },
+  office: {
+    name: 'Шаги 2–3: своя офлайн-точка с администратором',
+    short: 'Шаги 2–3 · точка',
+    area: 50, checkHall: 92000, marginHall: 0.50, sessionsTarget: 0, ordersTarget: 30,
+    capex: p => [
+      ['c_proj', 'Юрист, договор аренды, документы', 150000],
+      ['c_repair', `Ремонт (${p.area} м² × ${fmtInt(p.repairRate)} ₽)`, p.area * p.repairRate],
+      ['c_family', 'Переговорная для семьи, мебель, образцы (гробы, урны, принадлежности)', 600000],
+      ['c_sign', 'Вывеска и навигация', 150000],
+      ['c_crm', 'CRM, телефония, обучение администраторов', 150000],
+      ['c_rentfree', 'Аренда на время ремонта (1 мес.)', p.area * p.rentRate],
+      ['c_deposit', 'Депозит по аренде (2 мес.)', 2 * p.area * p.rentRate],
+      ['c_launch', 'Запуск: соцсети, съёмка, первые вечера, открытие', 400000]
+    ],
+    opex: p => [
+      ['o_rent', `Аренда ${p.area} м² × ${fmtInt(p.rentRate)} ₽`, p.area * p.rentRate],
+      ['o_util', 'Коммунальные, уборка', 15000],
+      ['o_staff', 'Зарплаты: 2 администратора посменно', 120000],
+      ['o_tax', 'Взносы с зарплат (~25%)', 30000],
+      ['o_brand', 'Бренд: соцсети, вечера, контент', 150000],
+      ['o_it', 'Связь, CRM, банк, эквайринг', 20000],
+      ['o_sec', 'Охрана, страхование', 10000],
+      ['o_acc', 'Бухгалтерия и юрист (аутсорс)', 25000],
+      ['o_other', 'Прочее', 25000]
+    ]
+  },
   stage1: {
-    name: 'Этап 1: зал прощания и комната для семьи, хранение у партнёров',
-    short: 'Этап 1 · зал',
+    name: 'Шаг 4: зал прощания и комната для семьи, хранение у партнёров',
+    short: 'Шаг 4 · зал',
     area: 130, checkHall: 110000, marginHall: 0.52, sessionsTarget: 35, ordersTarget: 35,
     capex: p => [
       ['c_proj', 'Проект, согласования, юрист', 400000],
@@ -48,8 +74,8 @@ const VARIANTS = {
     ]
   },
   full: {
-    name: 'Похоронный дом: зал прощания и своё хранение',
-    short: 'Похоронный дом',
+    name: 'Шаг 5: своё хранение, полный похоронный дом (если строить с нуля)',
+    short: 'Шаг 5 · хранение',
     area: 220, checkHall: 125000, marginHall: 0.55, sessionsTarget: 40, ordersTarget: 35,
     capex: p => [
       ['c_proj', 'Проект, согласования, юрист, санитарная и пожарная экспертиза', 900000],
@@ -102,7 +128,8 @@ const DEFAULTS = {
   profitShare: 0.35
 };
 
-const REPAIR_RATE = { brand: 0, stage1: 25000, full: 32000 };
+const REPAIR_RATE = { brand: 0, office: 20000, stage1: 25000, full: 32000 };
+const RENT_RATE = { brand: 0, office: 2200, stage1: 1700, full: 1700 };
 
 // Зимой в Петербурге уходит больше людей, летом меньше. Приблизительные индексы, в среднем 1.
 const SEASON = [1.12, 1.06, 1.04, 1.00, 0.97, 0.93, 0.95, 0.94, 0.94, 0.99, 1.01, 1.05];
@@ -316,7 +343,7 @@ function psShareNeeded(input, targetIrr) {
 
 function variantInput(variant) {
   const v = VARIANTS[variant];
-  return { variant, area: v.area, repairRate: REPAIR_RATE[variant], checkHall: v.checkHall, marginHall: v.marginHall,
+  return { variant, area: v.area, repairRate: REPAIR_RATE[variant], rentRate: RENT_RATE[variant] || DEFAULTS.rentRate, checkHall: v.checkHall, marginHall: v.marginHall,
     sessionsTarget: v.sessionsTarget, ordersTarget: v.ordersTarget };
 }
 
@@ -329,9 +356,10 @@ function scenarioInput(name, variant, extra) {
   if (sc.marginDelta) inp.marginHall = +(inp.marginHall + sc.marginDelta).toFixed(2);
   if (sc.sessionsMult) inp.sessionsTarget = Math.round(inp.sessionsTarget * sc.sessionsMult);
   if (sc.capexMult) inp.capexMult = sc.capexMult;
-  if (sc.prepMonths) inp.prepMonths = variant === 'brand' ? Math.min(sc.prepMonths, 3) : sc.prepMonths;
-  if (variant === 'brand' && !sc.prepMonths) inp.prepMonths = 2;
+  const prepCap = { brand: 3, office: 5 }[variant];
+  if (sc.prepMonths) inp.prepMonths = prepCap ? Math.min(sc.prepMonths, prepCap) : sc.prepMonths;
+  if (!sc.prepMonths && prepCap) inp.prepMonths = variant === 'brand' ? 2 : 3;
   return Object.assign(inp, extra || {});
 }
 
-if (typeof module !== 'undefined') module.exports = { VARIANTS, DEFAULTS, SEASON, SCENARIOS, DRIVERS, run, sensitivity, scenarioInput, variantInput, ordersForPayback, rsPctNeeded, psShareNeeded, capexTotal, opexTotal };
+if (typeof module !== 'undefined') module.exports = { VARIANTS, DEFAULTS, RENT_RATE, SEASON, SCENARIOS, DRIVERS, run, sensitivity, scenarioInput, variantInput, ordersForPayback, rsPctNeeded, psShareNeeded, capexTotal, opexTotal };
