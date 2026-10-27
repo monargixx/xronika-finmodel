@@ -10,15 +10,15 @@ const VARIANTS = {
     short: 'Шаг 1 · бренд',
     area: 0, checkHall: 105000, marginHall: 0.50, sessionsTarget: 0, ordersTarget: 25,
     capex: p => [
-      ['b_site', 'Новый сайт и страницы под районы, кладбища, крематории', 150000],
-      ['b_shoot', 'Съёмка команды, фото и видео для соцсетей', 60000],
-      ['b_launch', 'Запуск соцсетей и первые вечера с партнёрами', 100000],
+      ['b_site', 'Сайт и страницы под районы делаем сами: домен, хостинг, карты', 15000],
+      ['b_shoot', 'Съёмка и монтаж: Полина, на старте без оплаты', 0],
+      ['b_launch', 'Первые вечера у партнёров: свечи, цветы, печать', 20000],
       ['b_crm', 'CRM, телефония, обучение координаторов', 50000]
     ],
     opex: p => [
-      ['o_smm', 'Соцсети: ведём сами, монтаж и помощь фрилансера', 30000],
-      ['o_events', 'Камерные вечера у партнёров (билеты покрывают часть)', 20000],
-      ['o_seo', 'SEO и статьи', 15000],
+      ['o_smm', 'Соцсети и контент: Полина, на старте без оплаты', 0],
+      ['o_events', 'Камерные вечера у партнёров (билеты покрывают большую часть)', 10000],
+      ['o_seo', 'SEO и статьи: делаем сами', 0],
       ['o_crm', 'CRM, телефония', 5000]
     ]
   },
@@ -34,14 +34,14 @@ const VARIANTS = {
       ['c_crm', 'CRM, телефония, обучение администраторов', 150000],
       ['c_rentfree', 'Аренда на время ремонта (1 мес.)', p.area * p.rentRate],
       ['c_deposit', 'Депозит по аренде (2 мес.)', 2 * p.area * p.rentRate],
-      ['c_launch', 'Запуск: соцсети, съёмка, первые вечера, открытие', 150000]
+      ['c_launch', 'Открытие: вечер-знакомство, печать (съёмку и соцсети ведёт Полина)', 50000]
     ],
     opex: p => [
       ['o_rent', `Аренда ${p.area} м² × ${fmtInt(p.rentRate)} ₽`, p.area * p.rentRate],
       ['o_util', 'Коммунальные, уборка', 15000],
       ['o_staff', 'Зарплаты: 2 администратора посменно', 120000],
       ['o_tax', 'Взносы с зарплат (~25%)', 30000],
-      ['o_brand', 'Бренд: соцсети, вечера, контент (ведём сами)', 50000],
+      ['o_brand', 'Бренд: вечера и расходники (контент ведёт Полина)', 15000],
       ['o_it', 'Связь, CRM, банк, эквайринг', 20000],
       ['o_sec', 'Охрана, страхование', 10000],
       ['o_acc', 'Бухгалтерия и юрист (аутсорс)', 25000],
@@ -59,14 +59,14 @@ const VARIANTS = {
       ['c_family', 'Комната для семьи и образцы', 400000],
       ['c_rentfree', 'Аренда на время ремонта (2 мес.)', 2 * p.area * p.rentRate],
       ['c_deposit', 'Депозит по аренде (2 мес.)', 2 * p.area * p.rentRate],
-      ['c_launch', 'Маркетинг запуска: бренд, сайт, съёмка, открытие', 250000]
+      ['c_launch', 'Открытие: вечер, печать, навигация (съёмку и соцсети ведёт Полина)', 100000]
     ],
     opex: p => [
       ['o_rent', `Аренда ${p.area} м² × ${fmtInt(p.rentRate)} ₽`, p.area * p.rentRate],
       ['o_util', 'Коммунальные, уборка', 45000],
-      ['o_staff', 'Зарплаты: 2 администратора-координатора, SMM', 200000],
-      ['o_tax', 'Взносы с зарплат (~25%)', 50000],
-      ['o_brand', 'Бренд: соцсети, вечера, контент (ведём сами)', 50000],
+      ['o_staff', 'Зарплаты: 2 администратора-координатора', 160000],
+      ['o_tax', 'Взносы с зарплат (~25%)', 40000],
+      ['o_brand', 'Бренд: вечера и расходники (контент ведёт Полина)', 15000],
       ['o_it', 'Связь, CRM, банк, эквайринг', 25000],
       ['o_sec', 'Охрана, страхование', 15000],
       ['o_acc', 'Бухгалтерия и юрист (аутсорс)', 35000],
@@ -87,14 +87,14 @@ const VARIANTS = {
       ['c_car', 'Специальный транспорт, б/у с переоборудованием', 3500000],
       ['c_rentfree', 'Аренда на время ремонта (3 мес.)', 3 * p.area * p.rentRate],
       ['c_deposit', 'Депозит по аренде (2 мес.)', 2 * p.area * p.rentRate],
-      ['c_launch', 'Маркетинг запуска: бренд, сайт, съёмка, открытие', 800000]
+      ['c_launch', 'Открытие: вечер, печать, навигация (съёмку и соцсети ведёт Полина)', 150000]
     ],
     opex: p => [
       ['o_rent', `Аренда ${p.area} м² × ${fmtInt(p.rentRate)} ₽`, p.area * p.rentRate],
       ['o_util', 'Коммунальные, электричество холода 24/7, уборка, дезинфекция, вывоз отходов', 85000],
-      ['o_staff', 'Зарплаты: 2 администратора-координатора, специалист по подготовке и подмена, водитель, SMM', 415000],
-      ['o_tax', 'Взносы с зарплат (~25%)', 104000],
-      ['o_brand', 'Бренд: соцсети, вечера, контент (ведём сами)', 50000],
+      ['o_staff', 'Зарплаты: 2 администратора-координатора, специалист по подготовке и подмена, водитель', 375000],
+      ['o_tax', 'Взносы с зарплат (~25%)', 94000],
+      ['o_brand', 'Бренд: вечера и расходники (контент ведёт Полина)', 15000],
       ['o_car', 'Транспорт: топливо, страховка, ТО', 55000],
       ['o_it', 'Связь, CRM, банк, эквайринг', 30000],
       ['o_sec', 'Охрана, сигнализация, страхование имущества', 25000],
@@ -111,6 +111,8 @@ const DEFAULTS = {
   prepMonths: 6,
   // «Хроника» сейчас: всё это нужно сверить с реальными цифрами Даниила
   ordersNow: 15, checkNow: 100000, marginNow: 0.50, cpa: 10000, fixedNow: 100000, sqGrowth: 0.05,
+  // Контент ведёт Полина: на старте бесплатно, потом % с выручки дополнительных семей (тех, что сверх «как сейчас»)
+  contentPct: 0,
   // «Хроника» после проекта
   area: 130, rentRate: 1700, repairRate: 25000,
   ordersTarget: 35, rampMonths: 18,
@@ -206,7 +208,8 @@ function run(input) {
       fixed += opex;
     }
     const rev = orders * check + sessions * p.sessionPrice;
-    const ebitda = orders * (check * margin - p.cpa) + sessions * p.sessionPrice * p.sessionMargin - fixed;
+    const content = open ? Math.max(0, orders - sqOrders) * check * p.contentPct : 0;
+    const ebitda = orders * (check * margin - p.cpa) + sessions * p.sessionPrice * p.sessionMargin - fixed - content;
     const net = ebitda - tax(p, rev, ebitda);
     const capexM = m <= prep ? capex / prep : 0;
 
@@ -249,7 +252,8 @@ function run(input) {
   const unitNow = p.checkNow * p.marginNow - p.cpa;
   const sessContr = p.sessionsTarget * p.sessionPrice * p.sessionMargin;
   const sqMature = p.ordersNow * Math.pow(1 + p.sqGrowth, (prep + p.rampMonths) / 12);
-  const beOrders = (sqMature * unitNow + opex - sessContr) / unitHall;
+  const cut = p.checkHall * p.contentPct;
+  const beOrders = (sqMature * unitNow + opex - sessContr - sqMature * cut) / (unitHall - cut);
 
   return { p, capex, opex, capexRows: rows(p, 'capex'), opexRows: rows(p, 'opex'), months, years, peak, investment,
     firstPos: firstPos ? firstPos.m : null, payback, npv, irr: projIrr, tv, last12,
